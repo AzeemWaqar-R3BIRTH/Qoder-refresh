@@ -1,0 +1,27 @@
+I want you to create a web based app, for my final year project for my bachelors in cyber security degree. The app should simulate an instance that allows the employees of a department to train them regarding cyber security and raise awareness. The app will provide several challenges such as sql injection, command injection and xss. There will be a scoring system and based on the scores employees will be rewarded. The rewards will be that highest ranking employee will be the highest job role in that department. This will use a generative ai model that will train on the scores of employees and modify the challenges accordingly. There will be multiple levels
+
+
+I am Making a final year project for my bachelors degree in cyber secuirity. the project is related to Gamified Learning. The web app will be made on flask and upon registration, the app will ask for the employees username, passweord, email for QR to be sent on and their Department ( Hospital, Banking, etc). upon successful registration, the qr will be received via email to the employee's entered email. once scanning the qrcode, the employee gets entered into the main dashboard. which will show his statistics, scores, employee level. and any other useful details. on the dashboard the employee can also start the challenges. The web app will simulate an instance for that specific employee and store his scores seperate to others. and will be private to that indvitual. the app will provide several challenges such as sql injection, command injection and xss. Just like https://www.hacksplaining.com/lessons/sql-injection/start. There will be a scoring system and based on the scores employees will be rewarded. The rewards will be that highest ranking employee will be the highest job role in that department. This will use a generative ai model that will train on the scores of employees and modify the challenges accordingly. There will be multiple levels. this will enable employees of that company to increase their cyber secuirty awareness and it will also benefit them in securing higher role in their respective companies.
+We will use Flask mail, and .env file to store the Host email credentials with also storing the cryptographic key for the database.
+
+Each and everything should be Encrypted and all the web app should be in compliance with cyber secuirty laws.
+
+techstack:
+flask
+flask mail
+bcrypt
+qrcode.
+tiny db
+
+program workflow:
+The employee will visit the website
+the employee will register with his username, First Name, Last Name, Email, Password, Company, Department. All this will be entered via text and security measures will be implemented on these including secure coding practices.
+Once the employee is successfully registered, an email will be sent to the employees entered email address with some related text and the qrcode image. and then the employee will be directly redirected to the login page.
+The login page will only show the qrcode scanner and the webcam display, it will also have an option to upload the qrcode as an image if the webcam is not working for that system. Moreover only method of logging in will be via authenticating the QR code. If the employee is authenticated successfully he is redirected to the dashboard.
+on the dashboard he can start the challenges, view his scores and all the other information written above.
+He can also start the challenges via clicking on the start challenge button. he will be redirected to the challenges page.
+this will be solely inspired by the hacksplaining website, there will be multiple challenges of multiple categories. and The Challenges displayed will be predicted by the ai model on how difficult the challenge should be for that perticular employee and this assessment will be made via that employee's score and employee level also via other relevant parameters. 
+The Challenges can also display hints if the employee is struggling just like hacksplaining.
+After the challenge is completed, the outcome will be analysed by the ai model and the generative ai model will be trained accordingly, The score will be increased and if the employee is eligible for promotion in role in the company he will be refered to that post.
+
+Here is the basic workflow of the project.

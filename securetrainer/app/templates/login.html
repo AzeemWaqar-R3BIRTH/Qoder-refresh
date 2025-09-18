@@ -1,0 +1,1139 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - SecureTrainer{% endblock %}
+
+{% block content %}
+<!-- Force Cache Refresh -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<!-- ULTRA-RELIABLE jsQR Scanner v3.0 - Force Cache Bypass -->
+<script>
+// Cache-busting timestamp: 2025-09-16-FINAL
+console.log('🔥 ULTRA-RELIABLE QR SCANNER v3.0 - Starting fresh implementation...');
+
+// Force cache bypass by loading jsQR dynamically
+function loadJsQRLibrary() {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = `https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js?v=${Date.now()}`;
+        script.onload = () => {
+            console.log('✅ jsQR library loaded dynamically');
+            resolve();
+        };
+        script.onerror = () => {
+            console.error('❌ Failed to load jsQR library');
+            reject(new Error('Failed to load jsQR'));
+        };
+        document.head.appendChild(script);
+    });
+}
+
+// Ultra-reliable QR Scanner implementation
+window.UltraQRScanner = {
+    isScanning: false,
+    scanInterval: null,
+    canvas: null,
+    context: null,
+    video: null,
+    
+    // Initialize scanner with video element
+    async init(videoElement) {
+        console.log('🚀 ULTRA SCANNER: Initializing...');
+        
+        if (!videoElement || !videoElement.videoWidth || !videoElement.videoHeight) {
+            console.log('❌ ULTRA SCANNER: Video not ready:', {
+                element: !!videoElement,
+                width: videoElement?.videoWidth,
+                height: videoElement?.videoHeight
+            });
+            return false;
+        }
+        
+        this.video = videoElement;
+        
+        // Create processing canvas
+        this.canvas = document.createElement('canvas');
+        this.context = this.canvas.getContext('2d');
+        this.canvas.width = videoElement.videoWidth;
+        this.canvas.height = videoElement.videoHeight;
+        
+        console.log('✅ ULTRA SCANNER: Canvas initialized:', this.canvas.width, 'x', this.canvas.height);
+        return true;
+    },
+    
+    // Start continuous scanning
+    async start(videoElement) {
+        console.log('🎯 ULTRA SCANNER: Starting scan process...');
+        
+        // Load jsQR if not available
+        if (typeof jsQR === 'undefined') {
+            console.log('📦 ULTRA SCANNER: Loading jsQR library...');
+            try {
+                await loadJsQRLibrary();
+            } catch (error) {
+                console.error('❌ ULTRA SCANNER: Failed to load jsQR:', error);
+                return false;
+            }
+        }
+        
+        if (!await this.init(videoElement)) {
+            console.error('❌ ULTRA SCANNER: Initialization failed');
+            return false;
+        }
+        
+        this.isScanning = true;
+        
+        // Start rapid scanning - 200ms intervals for faster detection
+        this.scanInterval = setInterval(() => {
+            this.performScan();
+        }, 200);
+        
+        console.log('✅ ULTRA SCANNER: Continuous scanning started');
+        
+        // Visual feedback
+        this.updateScanStatus('Scanning for QR code...', 'scanning');
+        return true;
+    },
+    
+    // Perform a single scan
+    performScan() {
+        if (!this.isScanning || !this.video || !this.video.videoWidth) {
+            this.stop();
+            return;
+        }
+        
+        try {
+            // Draw current video frame to canvas
+            this.context.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+            
+            // Extract image data
+            const imageData = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Scan with jsQR
+            const result = jsQR(imageData.data, imageData.width, imageData.height, {
+                inversionAttempts: "dontInvert"
+            });
+            
+            if (result && result.data) {
+                console.log('🎉 ULTRA SCANNER: QR CODE DETECTED!', result.data);
+                this.stop();
+                this.handleQRDetection(result.data);
+            } else {
+                // Silent scanning - no spam logs
+            }
+            
+        } catch (error) {
+            console.error('❌ ULTRA SCANNER: Scan error:', error);
+        }
+    },
+    
+    // Stop scanning
+    stop() {
+        console.log('🛑 ULTRA SCANNER: Stopping...');
+        this.isScanning = false;
+        
+        if (this.scanInterval) {
+            clearInterval(this.scanInterval);
+            this.scanInterval = null;
+        }
+        
+        this.updateScanStatus('', 'idle');
+    },
+    
+    // Handle successful QR detection
+    async handleQRDetection(qrData) {
+        console.log('🔥 ULTRA SCANNER: Processing QR data:', qrData);
+        
+        this.updateScanStatus('QR detected! Authenticating...', 'success');
+        
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ qr_data: qrData })
+            });
+            
+            const data = await response.json();
+            console.log('📡 ULTRA SCANNER: Server response:', data);
+            
+            if (data.success) {
+                // Store user data
+                if (data.user) {
+                    sessionStorage.setItem('user', JSON.stringify(data.user));
+                }
+                
+                this.updateScanStatus('Login successful! Redirecting...', 'success');
+                
+                // Redirect after success
+                setTimeout(() => {
+                    window.location.href = data.redirect_url || '/dashboard';
+                }, 1500);
+                
+            } else {
+                this.updateScanStatus(data.message || 'Invalid QR code. Please try again.', 'error');
+                
+                // Restart scanning after error
+                setTimeout(() => {
+                    if (this.video && this.video.videoWidth) {
+                        this.start(this.video);
+                    }
+                }, 3000);
+            }
+            
+        } catch (error) {
+            console.error('❌ ULTRA SCANNER: Authentication error:', error);
+            this.updateScanStatus('Authentication failed. Please try again.', 'error');
+            
+            // Restart scanning after error
+            setTimeout(() => {
+                if (this.video && this.video.videoWidth) {
+                    this.start(this.video);
+                }
+            }, 3000);
+        }
+    },
+    
+    // Update scan status display
+    updateScanStatus(message, type) {
+        const statusElement = document.getElementById('status-message');
+        if (statusElement && message) {
+            statusElement.textContent = message;
+            statusElement.className = `status-message status-${type === 'scanning' ? 'info' : type}`;
+            statusElement.style.display = 'block';
+        }
+        
+        // Update overlay visual feedback
+        const overlay = document.getElementById('qr-overlay');
+        if (overlay) {
+            overlay.className = type === 'scanning' ? 'qr-overlay scanning' : 'qr-overlay';
+        }
+    }
+};
+
+console.log('✅ ULTRA QR SCANNER v3.0 ready for initialization');
+</script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 900px;
+            min-height: 600px;
+            display: flex;
+        }
+
+        .login-left {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .login-right {
+            flex: 1;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .welcome-text h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .welcome-text p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .login-form {
+            width: 100%;
+        }
+
+        .form-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .auth-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .auth-method {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .auth-method:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.1);
+        }
+
+        .auth-method.active {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .auth-icon {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .auth-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .auth-description {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+        }
+
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        #qr-upload {
+            display: none;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+            text-align: center;
+            display: none;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .demo-login {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .demo-text {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        /* Camera Modal Styles */
+        .camera-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .camera-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .camera-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .camera-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .camera-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .close-camera {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #666;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .close-camera:hover {
+            color: #333;
+        }
+
+        .camera-container {
+            position: relative;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 500px;
+            height: 400px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            background: #f5f5f5;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .qr-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            pointer-events: none;
+            z-index: 10;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { border-color: #667eea; }
+            50% { border-color: #28a745; }
+            100% { border-color: #667eea; }
+        }
+        
+        .qr-overlay.scanning {
+            border-color: #28a745;
+            animation: scanning 1s infinite;
+        }
+        
+        @keyframes scanning {
+            0% { border-color: #28a745; box-shadow: 0 0 5px #28a745; }
+            50% { border-color: #ffc107; box-shadow: 0 0 15px #ffc107; }
+            100% { border-color: #28a745; box-shadow: 0 0 5px #28a745; }
+        }
+
+        .qr-overlay::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+        }
+
+        .qr-corners {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #667eea;
+        }
+
+        .qr-corners.top-left {
+            top: -3px;
+            left: -3px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .qr-corners.top-right {
+            top: -3px;
+            right: -3px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .qr-corners.bottom-left {
+            bottom: -3px;
+            left: -3px;
+            border-right: none;
+            border-top: none;
+        }
+
+        .qr-corners.bottom-right {
+            bottom: -3px;
+            right: -3px;
+            border-left: none;
+            border-top: none;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                flex-direction: column;
+                max-width: 500px;
+            }
+            
+            .login-left {
+                padding: 40px 30px;
+            }
+            
+            .login-right {
+                padding: 40px 30px;
+            }
+            
+            .welcome-text h1 {
+                font-size: 2rem;
+            }
+
+            .camera-modal-content {
+                margin: 20px;
+                padding: 20px;
+            }
+
+            #video {
+                height: 300px;
+            }
+        }
+    </style>
+    <div class="login-container">
+        <div class="login-left">
+            <div class="logo">🛡️</div>
+            <div class="welcome-text">
+                <h1>SecureTrainer</h1>
+                <p>Welcome back! Use your QR code to securely access your cybersecurity training dashboard.</p>
+            </div>
+        </div>
+        
+        <div class="login-right">
+            <div class="login-form">
+                <h2 class="form-title">Secure Login</h2>
+                
+                <div class="auth-methods">
+                    <!-- Camera QR Scanner -->
+                    <div class="auth-method" id="camera-method">
+                        <div class="auth-icon">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <div class="auth-title">Scan QR Code</div>
+                        <div class="auth-description">Use your camera to scan the QR code from your email</div>
+                        <button class="btn btn-primary" id="open-camera-btn">
+                            <i class="fas fa-camera"></i> Open Camera
+                        </button>
+    </div>
+
+                    <!-- File Upload -->
+                    <div class="auth-method" id="upload-method">
+                        <div class="auth-icon">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div class="auth-title">Upload QR Code</div>
+                        <div class="auth-description">Upload the QR code image from your email</div>
+                        
+                        <div class="file-upload-area" id="file-upload-area">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                            <div class="upload-text">Click to upload QR code image</div>
+                            <div class="upload-hint">or drag and drop your QR code here</div>
+                            <input type="file" id="qr-upload" accept="image/*" />
+                </div>
+            </div>
+        </div>
+
+                <div class="status-message" id="status-message"></div>
+                
+                <div class="demo-login">
+                    <div class="demo-text">Don't have a QR code? Try the demo login</div>
+                    <button class="btn btn-success" id="demo-login">
+                        <i class="fas fa-user-secret"></i> Demo Login
+            </button>
+                </div>
+            </div>
+        </div>
+        </div>
+
+    <!-- Camera Modal -->
+    <div class="camera-modal" id="camera-modal">
+        <div class="camera-modal-content">
+            <div class="camera-header">
+                <h3 class="camera-title">Scan QR Code</h3>
+                <button class="close-camera" id="close-camera">&times;</button>
+            </div>
+            
+            <div class="camera-container">
+                <video id="video" autoplay muted playsinline></video>
+                <div class="qr-overlay" id="qr-overlay">
+                    <div class="qr-corners top-left"></div>
+                    <div class="qr-corners top-right"></div>
+                    <div class="qr-corners bottom-left"></div>
+                    <div class="qr-corners bottom-right"></div>
+                </div>
+                <div id="scan-status" style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 8px 12px; border-radius: 5px; font-size: 12px; display: none;">
+                    Scanning...
+                </div>
+                <div class="camera-controls">
+                    <button class="btn btn-primary" id="start-camera">
+                        <i class="fas fa-play"></i> Start Camera
+                    </button>
+                    <button class="btn btn-secondary" id="stop-camera" style="display: none;">
+                        <i class="fas fa-stop"></i> Stop Camera
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+        console.log('🚀 Starting ULTRA QR Code Login System...');
+        
+        // Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM loaded, initializing ULTRA system...');
+            
+            // Get all elements
+            const openCameraBtn = document.getElementById('open-camera-btn');
+            const fileUploadArea = document.getElementById('file-upload-area');
+            const qrUpload = document.getElementById('qr-upload');
+            const cameraModal = document.getElementById('camera-modal');
+            const closeCameraBtn = document.getElementById('close-camera');
+            const startCameraBtn = document.getElementById('start-camera');
+            const stopCameraBtn = document.getElementById('stop-camera');
+            const video = document.getElementById('video');
+            const statusMessage = document.getElementById('status-message');
+            const demoLoginBtn = document.getElementById('demo-login');
+            
+            console.log('🔍 ULTRA SYSTEM: Elements found:', {
+                openCameraBtn: !!openCameraBtn,
+                fileUploadArea: !!fileUploadArea,
+                qrUpload: !!qrUpload,
+                cameraModal: !!cameraModal,
+                video: !!video
+            });
+            
+            let stream = null;
+            
+            // Show status message
+            function showStatus(message, type) {
+                console.log(`📢 ULTRA SYSTEM: ${message} (${type})`);
+                statusMessage.textContent = message;
+                statusMessage.className = `status-message status-${type}`;
+                statusMessage.style.display = 'block';
+                
+                if (type === 'info') {
+                    setTimeout(() => {
+                        statusMessage.style.display = 'none';
+                    }, 3000);
+                }
+            }
+            
+            // Open camera modal
+            function openCameraModal() {
+                console.log('📷 Opening camera modal...');
+                try {
+                    if (!cameraModal) {
+                        console.error('❌ Camera modal element not found');
+                        showStatus('Camera interface not available.', 'error');
+                        return;
+                    }
+                    
+                    console.log('📷 Adding active class to modal...');
+                    cameraModal.classList.add('active');
+                    
+                    // Wait a moment for modal to open, then start camera
+                    setTimeout(() => {
+                        console.log('📷 Modal opened, starting camera...');
+                        startCamera();
+                    }, 100);
+                } catch (error) {
+                    console.error('❌ Error opening camera modal:', error);
+                    showStatus('Failed to open camera interface.', 'error');
+                }
+            }
+            
+            // Close camera modal
+            function closeCameraModal() {
+                console.log('❌ Closing camera modal...');
+                cameraModal.classList.remove('active');
+                stopCamera();
+            }
+            
+            // Start camera
+            async function startCamera() {
+                try {
+                    showStatus('Starting camera...', 'info');
+                    console.log('🎥 Requesting camera access...');
+                    
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        throw new Error('Camera not supported on this device');
+                    }
+                    
+                    // Stop any existing streams first
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+                    
+                    // Get camera stream with better constraints
+                    const constraints = {
+                        video: { 
+                            facingMode: { ideal: 'environment' }, // Prefer back camera
+                            width: { ideal: 1280, min: 640 },
+                            height: { ideal: 720, min: 480 },
+                            frameRate: { ideal: 30, min: 15 }
+                        },
+                        audio: false
+                    };
+                    
+                    console.log('🎥 Requesting camera with constraints:', constraints);
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    
+                    console.log('✅ Camera access granted');
+                    console.log('📹 Stream info:', {
+                        active: stream.active,
+                        tracks: stream.getTracks().length,
+                        videoTracks: stream.getVideoTracks().length
+                    });
+                    
+                    // Set up video element
+                    video.srcObject = stream;
+                    video.setAttribute('playsinline', true); // Important for mobile
+                    video.setAttribute('muted', true);
+                    
+                    // Wait for video to be ready
+                    await new Promise((resolve, reject) => {
+                        video.onloadedmetadata = () => {
+                            console.log('📹 Video metadata loaded');
+                            resolve();
+                        };
+                        video.onerror = (error) => {
+                            console.error('❌ Video error:', error);
+                            reject(error);
+                        };
+                        // Timeout after 10 seconds
+                        setTimeout(() => reject(new Error('Video loading timeout')), 10000);
+                    });
+                    
+                    // Start video playback
+                    await video.play();
+                    console.log('▶️ Video started playing');
+                    console.log('📹 Video dimensions:', video.videoWidth, 'x', video.videoHeight);
+                    
+                    // Update UI
+                    startCameraBtn.style.display = 'none';
+                    stopCameraBtn.style.display = 'inline-flex';
+                    
+                    // Wait a moment for video to stabilize, then start ULTRA QR scanning
+                    setTimeout(() => {
+                        console.log('📷 ULTRA SYSTEM: Starting Ultra QR scanner after video stabilization...');
+                        
+                        // Use Ultra QR scanner
+                        if (window.UltraQRScanner) {
+                            window.UltraQRScanner.start(video).then(() => {
+                                console.log('✅ ULTRA SYSTEM: Scanner started successfully');
+                            }).catch(error => {
+                                console.error('❌ ULTRA SYSTEM: Scanner start failed:', error);
+                                showStatus('QR Scanner initialization failed. Please use file upload.', 'error');
+                            });
+                        } else {
+                            console.error('❌ ULTRA SYSTEM: Ultra QR Scanner not available');
+                            showStatus('QR Scanner not available. Please use file upload.', 'error');
+                        }
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.error('❌ Camera error:', error);
+                    let errorMessage = 'Camera access failed. Please use file upload instead.';
+                    
+                    if (error.name === 'NotAllowedError') {
+                        errorMessage = 'Camera access denied. Please allow camera access in your browser settings and try again.';
+                    } else if (error.name === 'NotFoundError') {
+                        errorMessage = 'No camera found. Please connect a camera or use file upload instead.';
+                    } else if (error.name === 'NotReadableError') {
+                        errorMessage = 'Camera is being used by another application. Please close other apps and try again.';
+                    } else if (error.message.includes('timeout')) {
+                        errorMessage = 'Camera loading timed out. Please try again or use file upload.';
+                    }
+                    
+                    showStatus(errorMessage, 'error');
+                    
+                    // Reset UI
+                    startCameraBtn.style.display = 'inline-flex';
+                    stopCameraBtn.style.display = 'none';
+                }
+            }
+            
+            // Stop camera
+            function stopCamera() {
+                console.log('🛑 ULTRA SYSTEM: Stopping camera...');
+                
+                // Stop Ultra QR scanner
+                if (window.UltraQRScanner) {
+                    window.UltraQRScanner.stop();
+                }
+                
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                }
+                
+                video.srcObject = null;
+                startCameraBtn.style.display = 'inline-flex';
+                stopCameraBtn.style.display = 'none';
+                
+                showStatus('Camera stopped.', 'info');
+            }
+            
+            // QR scanning is now handled by the ULTRA jsQR scanner above
+            // All old QR scanner code has been completely replaced with cache-busting implementation
+            
+            // File upload and other functions remain the same
+            
+            // Handle file upload
+            function handleFileUpload(file) {
+                console.log('📁 handleFileUpload called with:', file);
+                if (!file) {
+                    console.log('❌ No file provided');
+                    return;
+                }
+                
+                if (!file.type.startsWith('image/')) {
+                    console.log('❌ File is not an image:', file.type);
+                    showStatus('Please select an image file.', 'error');
+                    return;
+                }
+
+                showStatus('Processing QR code image...', 'info');
+                console.log('📁 Processing file:', file.name, file.type, file.size);
+
+                const formData = new FormData();
+                formData.append('qr_image', file);
+                console.log('📁 FormData created, sending request...');
+
+                fetch('/api/auth/login', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    console.log('📡 Upload response status:', response.status);
+                    console.log('📡 Upload response headers:', response.headers);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📄 Upload response data:', data);
+                    if (data.success) {
+                        showStatus('Login successful! Redirecting...', 'success');
+                        
+                        // Store user data in sessionStorage for frontend use
+                        if (data.user) {
+                            sessionStorage.setItem('user', JSON.stringify(data.user));
+                            console.log('💾 User data stored in sessionStorage:', data.user);
+                        }
+                        
+                        // Redirect after a short delay
+                        setTimeout(() => {
+                            console.log('🔄 Redirecting to dashboard...');
+                            window.location.href = data.redirect_url || '/dashboard';
+                        }, 1500);
+                    } else {
+                        showStatus(data.message || 'Invalid QR code. Please try again.', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Upload error:', error);
+                    showStatus('Error processing QR code. Please try again.', 'error');
+                });
+            }
+            
+
+            
+            // Demo login
+            function performDemoLogin() {
+                showStatus('Logging in with demo account...', 'info');
+                
+                fetch('/demo-login', {
+                    method: 'GET'
+                })
+                .then(response => {
+            if (response.ok) {
+                        showStatus('Demo login successful! Redirecting...', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 1500);
+                    } else {
+                        showStatus('Demo login failed. Please try again.', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Demo login error:', error);
+                    showStatus('Demo login failed. Please try again.', 'error');
+                });
+            }
+            
+            // Event listeners for ULTRA system
+            console.log('🔧 ULTRA SYSTEM: Setting up event listeners...');
+            
+            if (openCameraBtn) {
+                console.log('✅ ULTRA SYSTEM: Adding event listener to openCameraBtn');
+                openCameraBtn.addEventListener('click', function(e) {
+                    console.log('📷 ULTRA SYSTEM: Open camera button clicked');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openCameraModal();
+                });
+            } else {
+                console.error('❌ ULTRA SYSTEM: openCameraBtn not found');
+            }
+            
+            if (fileUploadArea) {
+                console.log('✅ Adding click event listener to fileUploadArea');
+                fileUploadArea.addEventListener('click', function(e) {
+                    console.log('📁 Upload area clicked');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (qrUpload) {
+                        console.log('📁 Triggering file input click');
+                        qrUpload.click();
+                    } else {
+                        console.error('❌ qrUpload element not found');
+                    }
+                });
+                
+                // Also handle drag and drop events
+                fileUploadArea.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fileUploadArea.classList.add('dragover');
+                    console.log('📁 Drag over detected');
+                });
+                
+                fileUploadArea.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fileUploadArea.classList.remove('dragover');
+                    console.log('📁 Drag leave detected');
+                });
+                
+                fileUploadArea.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fileUploadArea.classList.remove('dragover');
+                    console.log('📁 File dropped');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        console.log('📁 Processing dropped file:', files[0].name);
+                        handleFileUpload(files[0]);
+                    }
+                });
+            } else {
+                console.error('❌ fileUploadArea not found, cannot add event listener');
+            }
+            
+            if (qrUpload) {
+                console.log('✅ Adding change event listener to qrUpload');
+                qrUpload.addEventListener('change', function(e) {
+                    console.log('📁 File selected via input:', e.target.files[0]);
+                    if (e.target.files[0]) {
+                        handleFileUpload(e.target.files[0]);
+                    }
+                });
+            } else {
+                console.error('❌ qrUpload element not found');
+            }
+            
+            if (closeCameraBtn) {
+                closeCameraBtn.addEventListener('click', function(e) {
+                    console.log('❌ Close camera clicked');
+                    e.preventDefault();
+                    closeCameraModal();
+                });
+            }
+            
+            if (startCameraBtn) {
+                startCameraBtn.addEventListener('click', function(e) {
+                    console.log('▶️ Start camera clicked');
+                    e.preventDefault();
+                    startCamera();
+                });
+            }
+            
+            if (stopCameraBtn) {
+                stopCameraBtn.addEventListener('click', function(e) {
+                    console.log('🛑 Stop camera clicked');
+                    e.preventDefault();
+                    stopCamera();
+                });
+            }
+            
+            if (demoLoginBtn) {
+                demoLoginBtn.addEventListener('click', function(e) {
+                    console.log('👤 Demo login clicked');
+                    e.preventDefault();
+                    performDemoLogin();
+                });
+            }
+            
+            // Click outside modal to close
+            if (cameraModal) {
+                cameraModal.addEventListener('click', function(e) {
+                    if (e.target === cameraModal) {
+                        closeCameraModal();
+                    }
+                });
+            }
+            
+            console.log('✅ All event listeners attached');
+            showStatus('Ready to scan QR code or upload image', 'info');
+        });
+        
+        console.log('🎯 ULTRA QR Code Login System v3.0 initialized and ready!');
+</script>
+{% endblock %}

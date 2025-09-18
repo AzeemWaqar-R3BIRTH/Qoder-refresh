@@ -1,0 +1,49 @@
+user_id,challenge_id,event_type,timestamp,metadata
+user_1,sql-injection,start,2025-05-06 18:42:11.331816,{}
+user_1,sql-injection,hint,2025-05-06 18:42:11.331816,{'level': 1}
+user_1,sql-injection,complete,2025-05-06 18:42:11.331816,{}
+user_1,xss,start,2025-05-06 18:42:11.331841,{}
+user_1,xss,complete,2025-05-06 18:42:11.331841,{}
+user_1,cmd-injection,start,2025-05-06 18:42:11.331851,{}
+user_1,cmd-injection,hint,2025-05-06 18:42:11.331851,{'level': 1}
+user_1,cmd-injection,hint,2025-05-06 18:42:11.331851,{'level': 2}
+user_1,cmd-injection,hint,2025-05-06 18:42:11.331851,{'level': 3}
+user_1,cmd-injection,complete,2025-05-06 18:42:11.331851,{}
+user_2,sql-injection,start,2025-05-06 18:42:11.331858,{}
+user_2,sql-injection,complete,2025-05-06 18:42:11.331858,{}
+user_2,xss,start,2025-05-06 18:42:11.331864,{}
+user_2,xss,hint,2025-05-06 18:42:11.331864,{'level': 1}
+user_2,xss,hint,2025-05-06 18:42:11.331864,{'level': 2}
+user_2,cmd-injection,start,2025-05-06 18:42:11.331868,{}
+user_2,cmd-injection,hint,2025-05-06 18:42:11.331868,{'level': 1}
+user_2,cmd-injection,hint,2025-05-06 18:42:11.331868,{'level': 2}
+user_2,cmd-injection,complete,2025-05-06 18:42:11.331868,{}
+user_3,sql-injection,start,2025-05-06 18:42:11.331873,{}
+user_3,sql-injection,hint,2025-05-06 18:42:11.331873,{'level': 1}
+user_3,xss,start,2025-05-06 18:42:11.331875,{}
+user_3,xss,hint,2025-05-06 18:42:11.331875,{'level': 1}
+user_3,xss,hint,2025-05-06 18:42:11.331875,{'level': 2}
+user_3,xss,hint,2025-05-06 18:42:11.331875,{'level': 3}
+user_3,cmd-injection,start,2025-05-06 18:42:11.331884,{}
+user_4,sql-injection,start,2025-05-06 18:42:11.331889,{}
+user_4,sql-injection,hint,2025-05-06 18:42:11.331889,{'level': 1}
+user_4,sql-injection,complete,2025-05-06 18:42:11.331889,{}
+user_4,xss,start,2025-05-06 18:42:11.331892,{}
+user_4,xss,hint,2025-05-06 18:42:11.331892,{'level': 1}
+user_4,xss,complete,2025-05-06 18:42:11.331892,{}
+user_4,cmd-injection,start,2025-05-06 18:42:11.331895,{}
+user_4,cmd-injection,hint,2025-05-06 18:42:11.331895,{'level': 1}
+user_4,cmd-injection,hint,2025-05-06 18:42:11.331895,{'level': 2}
+user_4,cmd-injection,complete,2025-05-06 18:42:11.331895,{}
+user_5,sql-injection,start,2025-05-06 18:42:11.331898,{}
+user_5,sql-injection,hint,2025-05-06 18:42:11.331898,{'level': 1}
+user_5,sql-injection,hint,2025-05-06 18:42:11.331898,{'level': 2}
+user_5,sql-injection,hint,2025-05-06 18:42:11.331898,{'level': 3}
+user_5,xss,start,2025-05-06 18:42:11.331901,{}
+user_5,xss,hint,2025-05-06 18:42:11.331901,{'level': 1}
+user_5,xss,hint,2025-05-06 18:42:11.331901,{'level': 2}
+user_5,xss,hint,2025-05-06 18:42:11.331901,{'level': 3}
+user_5,cmd-injection,start,2025-05-06 18:42:11.331904,{}
+user_5,cmd-injection,hint,2025-05-06 18:42:11.331904,{'level': 1}
+user_5,cmd-injection,hint,2025-05-06 18:42:11.331904,{'level': 2}
+user_5,cmd-injection,complete,2025-05-06 18:42:11.331904,{}

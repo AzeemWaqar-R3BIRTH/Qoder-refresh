@@ -1,0 +1,1083 @@
+{% extends 'base.html' %}
+
+{% block title %}Challenges - SecureTrainer{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <style>
+        .challenge-container {
+            min-height: 500px;
+        }
+        .terminal {
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .terminal-input {
+            background-color: transparent;
+            border: none;
+            color: #f0f0f0;
+            font-family: 'Courier New', monospace;
+            width: 100%;
+            outline: none;
+        }
+        .terminal-prefix {
+            color: #50fa7b;
+        }
+        .hint-box {
+            background-color: #fffbea;
+            border-left: 4px solid #f59e0b;
+        }
+        .code-box {
+            background-color: #282c34;
+            color: #abb2bf;
+            font-family: 'Courier New', monospace;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .challenge-type-sql { border-left: 4px solid #ef4444; }
+        .challenge-type-xss { border-left: 4px solid #f59e0b; }
+        .challenge-type-cmd { border-left: 4px solid #8b5cf6; }
+        .challenge-type-auth { border-left: 4px solid #06b6d4; }
+        .challenge-type-csrf { border-left: 4px solid #10b981; }
+        
+        /* Interactive Demo Styles */
+        .demo-container {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .demo-container h4 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+        
+        .terminal-input-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #f0f0f0;
+            font-family: 'Courier New', monospace;
+            outline: none;
+        }
+        
+        .terminal-prefix {
+            color: #50fa7b;
+            font-weight: bold;
+        }
+        
+        .success {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .error {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .warning {
+            color: #ffc107;
+            font-weight: 600;
+        }
+        
+        .info {
+            color: #17a2b8;
+            font-weight: 600;
+        }
+        
+        .common-passwords ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        
+        .common-passwords li {
+            margin-bottom: 5px;
+            color: #6c757d;
+        }
+        
+        .attack-log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .attack-log h5 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        
+        .attack-step {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .token-info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .token-info code {
+            background: #f5f5f5;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .session-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .session-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .session-actions button {
+            padding: 8px 16px;
+            border: 1px solid #007bff;
+            background: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .session-actions button:hover {
+            background: #0056b3;
+        }
+        
+        .challenge-demo {
+            margin-top: 20px;
+        }
+        
+        .challenge-demo iframe {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+        
+        .challenge-card {
+            transition: all 0.3s ease;
+        }
+        .challenge-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .difficulty-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+        }
+        .difficulty-beginner { background-color: #dcfce7; color: #166534; }
+        .difficulty-intermediate { background-color: #fef3c7; color: #92400e; }
+        .difficulty-advanced { background-color: #fecaca; color: #991b1b; }
+        .difficulty-expert { background-color: #f3e8ff; color: #581c87; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900">
+    <!-- Header -->
+    <header class="bg-blue-800 text-white shadow-md py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <i class="fas fa-shield-alt text-2xl mr-3"></i>
+                <h1 class="text-xl font-bold">SecureTrainer</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="/dashboard" class="bg-blue-700 hover:bg-blue-600 text-white py-2 px-4 rounded transition">
+                    <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                </a>
+                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span class="text-sm font-medium" id="user-initials">JS</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Challenge Categories Overview -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Challenge Categories</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- SQL Injection -->
+                <div class="challenge-card bg-white rounded-lg shadow-md overflow-hidden challenge-type-sql">
+                    <div class="bg-red-600 text-white p-4">
+                        <h3 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-database mr-2"></i>
+                            SQL Injection
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">Learn to identify and prevent SQL injection vulnerabilities in web applications.</p>
+                        <div class="mb-4">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-700">Progress</span>
+                                <span class="text-sm font-medium text-gray-700" id="sql-progress">0/0 completed</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-red-600 h-2.5 rounded-full transition-all duration-500" id="sql-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <button onclick="startChallengeCategory('sql_injection')" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md font-medium transition">
+                            Start SQL Challenges
+                        </button>
+                    </div>
+                </div>
+
+                <!-- XSS -->
+                <div class="challenge-card bg-white rounded-lg shadow-md overflow-hidden challenge-type-xss">
+                    <div class="bg-yellow-600 text-white p-4">
+                        <h3 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-code mr-2"></i>
+                            Cross-Site Scripting (XSS)
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">Master techniques to identify and prevent malicious script injection in web applications.</p>
+                        <div class="mb-4">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-700">Progress</span>
+                                <span class="text-sm font-medium text-gray-700" id="xss-progress">0/0 completed</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-yellow-600 h-2.5 rounded-full transition-all duration-500" id="xss-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <button onclick="startChallengeCategory('xss')" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-md font-medium transition">
+                            Start XSS Challenges
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Command Injection -->
+                <div class="challenge-card bg-white rounded-lg shadow-md overflow-hidden challenge-type-cmd">
+                    <div class="bg-purple-600 text-white p-4">
+                        <h3 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-terminal mr-2"></i>
+                            Command Injection
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">Understand how attackers exploit command injection vulnerabilities and how to protect systems.</p>
+                        <div class="mb-4">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-700">Progress</span>
+                                <span class="text-sm font-medium text-gray-700" id="cmd-progress">0/0 completed</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-purple-600 h-2.5 rounded-full transition-all duration-500" id="cmd-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <button onclick="startChallengeCategory('command_injection')" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md font-medium transition">
+                            Start Command Injection Challenges
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Authentication -->
+                <div class="challenge-card bg-white rounded-lg shadow-md overflow-hidden challenge-type-auth">
+                    <div class="bg-cyan-600 text-white p-4">
+                        <h3 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-lock mr-2"></i>
+                            Authentication Attacks
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">Learn about various authentication vulnerabilities including brute force, credential stuffing, and more.</p>
+                        <div class="mb-4">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-700">Progress</span>
+                                <span class="text-sm font-medium text-gray-700" id="auth-progress">0/0 completed</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-cyan-600 h-2.5 rounded-full transition-all duration-500" id="auth-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <button onclick="startChallengeCategory('authentication')" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-4 rounded-md font-medium transition">
+                            Start Authentication Challenges
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CSRF -->
+                <div class="challenge-card bg-white rounded-lg shadow-md overflow-hidden challenge-type-csrf">
+                    <div class="bg-green-600 text-white p-4">
+                        <h3 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-exchange-alt mr-2"></i>
+                            CSRF Vulnerabilities
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">Understand Cross-Site Request Forgery attacks and effective protection mechanisms.</p>
+                        <div class="mb-4">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-700">Progress</span>
+                                <span class="text-sm font-medium text-gray-700" id="csrf-progress">0/0 completed</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-green-600 h-2.5 rounded-full transition-all duration-500" id="csrf-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <button onclick="startChallengeCategory('csrf')" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md font-medium transition">
+                            Start CSRF Challenges
+                        </button>
+                    </div>
+                </div>
+
+                <!-- AI Recommendations -->
+                <div class="challenge-card bg-white rounded-lg shadow-md overflow-hidden border-2 border-blue-300">
+                    <div class="bg-blue-600 text-white p-4">
+                        <h3 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-robot mr-2"></i>
+                            AI Recommendations
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">Get personalized challenge recommendations based on your performance and learning patterns.</p>
+                        <div class="mb-4">
+                            <div class="text-center">
+                                <div class="w-16 h-16 mx-auto mb-2">
+                                    <svg class="progress-ring" width="64" height="64">
+                                        <circle class="text-gray-200" stroke-width="4" stroke="currentColor" fill="transparent" r="26" cx="32" cy="32"/>
+                                        <circle class="text-blue-600" stroke-width="4" stroke-dasharray="163.36281798666926" stroke-dashoffset="0" stroke="currentColor" fill="transparent" r="26" cx="32" cy="32"/>
+                                    </svg>
+                                </div>
+                                <p class="text-sm text-gray-600">AI Analysis</p>
+                            </div>
+                        </div>
+                        <button onclick="getAIRecommendations()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-medium transition">
+                            Get AI Recommendations
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Challenge Section -->
+        <div id="current-challenge-section" class="hidden">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+                <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4">
+                    <h2 class="text-xl font-bold flex items-center justify-between">
+                        <span>
+                            <i class="fas fa-bug mr-2"></i>
+                            <span id="challenge-title">Challenge Title</span>
+                        </span>
+                        <div class="flex items-center space-x-2">
+                            <span class="difficulty-badge" id="challenge-difficulty">Intermediate</span>
+                            <span class="bg-white text-blue-600 text-xs font-medium px-2 py-1 rounded">
+                                <i class="fas fa-star mr-1"></i> <span id="challenge-points">100</span> points
+                            </span>
+                        </div>
+                    </h2>
+                </div>
+
+                <div class="p-6">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Scenario:</h3>
+                        <p class="text-gray-600" id="challenge-scenario">Challenge scenario will appear here.</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Your Mission:</h3>
+                        <p class="text-gray-600 mb-4" id="challenge-question">Challenge question will appear here.</p>
+                        
+                        <div id="hint-section" class="hidden">
+                            <div class="hint-box p-4 rounded-md mb-4">
+                                <h4 class="font-medium text-yellow-800 mb-1 flex items-center">
+                                    <i class="fas fa-lightbulb mr-2"></i> Hint
+                                </h4>
+                                <p class="text-sm text-yellow-800" id="challenge-hint">Hint will appear here.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Challenge Interface -->
+                    <div class="challenge-container border border-gray-200 rounded-lg mb-6">
+                        <div class="bg-gray-100 border-b border-gray-200 p-4">
+                            <h4 class="font-medium text-gray-800" id="challenge-interface-title">Challenge Interface</h4>
+                        </div>
+                        <div class="p-6" id="challenge-interface">
+                            <!-- Challenge interface will be dynamically loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex space-x-4">
+                        <button onclick="requestHint()" class="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-md font-medium transition">
+                            <i class="fas fa-lightbulb mr-2"></i> Get Hint
+                        </button>
+                        <button onclick="submitChallenge()" class="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-md font-medium transition">
+                            <i class="fas fa-check mr-2"></i> Submit Answer
+                        </button>
+                        <button onclick="skipChallenge()" class="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md font-medium transition">
+                            <i class="fas fa-forward mr-2"></i> Skip
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Learning Insights -->
+        <div id="ai-insights-section" class="hidden">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white p-4">
+                    <h3 class="text-lg font-bold flex items-center">
+                        <i class="fas fa-brain mr-2"></i>
+                        AI Learning Insights
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-3">Your Learning Profile</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Learning Style:</span>
+                                    <span class="font-medium" id="learning-style">Balanced</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Success Rate:</span>
+                                    <span class="font-medium" id="success-rate">75%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Recommended Focus:</span>
+                                    <span class="font-medium" id="recommended-focus">XSS</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-3">Performance Analysis</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Strengths:</span>
+                                    <span class="font-medium" id="strengths">SQL Injection, XSS</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Areas for Improvement:</span>
+                                    <span class="font-medium" id="weaknesses">Command Injection</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Next Challenge Difficulty:</span>
+                                    <span class="font-medium" id="next-difficulty">Advanced</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-4 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="text-center text-gray-500 text-sm">
+                © 2023 SecureTrainer. All rights reserved. | Version 1.0
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let currentChallenge = null;
+        let currentUser = null;
+        let hintCount = 0;
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            loadChallengeProgress();
+        });
+
+        function loadUserData() {
+            // Get user data from localStorage or session
+            const userData = localStorage.getItem('userData');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                document.getElementById('user-initials').textContent = 
+                    (currentUser.first_name?.[0] || '') + (currentUser.last_name?.[0] || '');
+            }
+        }
+
+        function loadChallengeProgress() {
+            // Load progress for each category
+            updateCategoryProgress('sql_injection', 'sql');
+            updateCategoryProgress('xss', 'xss');
+            updateCategoryProgress('command_injection', 'cmd');
+            updateCategoryProgress('authentication', 'auth');
+            updateCategoryProgress('csrf', 'csrf');
+        }
+
+        function updateCategoryProgress(category, elementId) {
+            // This would typically fetch from the API
+            const completed = Math.floor(Math.random() * 5);
+            const total = 5;
+            const percentage = (completed / total) * 100;
+            
+            document.getElementById(`${elementId}-progress`).textContent = `${completed}/${total} completed`;
+            document.getElementById(`${elementId}-progress-bar`).style.width = `${percentage}%`;
+        }
+
+        function startChallengeCategory(category) {
+            // Show challenge section
+            document.getElementById('current-challenge-section').classList.remove('hidden');
+            
+            // Load a challenge from the selected category
+            loadChallenge(category);
+        }
+
+        function loadChallenge(category) {
+            // This would typically fetch from the API
+            const challenges = {
+                'sql_injection': {
+                    title: 'SQL Injection Challenge',
+                    difficulty: 'Intermediate',
+                    points: 150,
+                    scenario: 'You are testing a login form for SQL injection vulnerabilities. The form accepts username and password inputs.',
+                    question: 'What payload would you use to bypass authentication?',
+                    type: 'sql_injection'
+                },
+                'xss': {
+                    title: 'XSS Challenge',
+                    difficulty: 'Beginner',
+                    points: 100,
+                    scenario: 'A comment system displays user input without proper sanitization.',
+                    question: 'What HTML payload would execute JavaScript when displayed?',
+                    type: 'xss'
+                },
+                'command_injection': {
+                    title: 'Command Injection Challenge',
+                    difficulty: 'Advanced',
+                    points: 200,
+                    scenario: 'A ping utility accepts user input for IP addresses.',
+                    question: 'How can you execute additional commands?',
+                    type: 'command_injection'
+                }
+            };
+
+            currentChallenge = challenges[category] || challenges['sql_injection'];
+            displayChallenge(currentChallenge);
+        }
+
+        function displayChallenge(challenge) {
+            document.getElementById('challenge-title').textContent = challenge.title;
+            document.getElementById('challenge-difficulty').textContent = challenge.difficulty;
+            document.getElementById('challenge-difficulty').className = `difficulty-badge difficulty-${challenge.difficulty.toLowerCase()}`;
+            document.getElementById('challenge-points').textContent = challenge.points;
+            document.getElementById('challenge-scenario').textContent = challenge.scenario;
+            document.getElementById('challenge-question').textContent = challenge.question;
+            
+            // Load appropriate interface based on challenge type
+            loadChallengeInterface(challenge);
+        }
+
+        function loadChallengeInterface(challenge) {
+            const interfaceDiv = document.getElementById('challenge-interface');
+            
+            switch(challenge.type) {
+                case 'sql_injection':
+                    interfaceDiv.innerHTML = createSQLInjectionInterface();
+                    break;
+                case 'xss':
+                    interfaceDiv.innerHTML = createXSSInterface();
+                    break;
+                case 'command_injection':
+                    interfaceDiv.innerHTML = createCommandInjectionInterface();
+                    break;
+                default:
+                    interfaceDiv.innerHTML = createGenericInterface();
+            }
+        }
+
+        function createSQLInjectionInterface() {
+            return `
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Enter your SQL injection payload:</label>
+                    <input type="text" id="sql-payload" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="e.g., ' OR '1'='1' --">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Simulated SQL Query:</label>
+                    <div class="code-box p-3 text-sm">
+                        <span class="text-green-400">SELECT * FROM users WHERE username = '</span><span id="sql-query-display" class="text-red-400">[your input]</span><span class="text-green-400">' AND password = 'password';</span>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Terminal Output:</label>
+                    <div class="terminal h-32 overflow-y-auto" id="sql-terminal">
+                        <div class="text-green-400">$ mysql -u root -p</div>
+                        <div class="text-green-400">Enter password: ********</div>
+                        <div class="text-green-400">mysql> USE securetrainer;</div>
+                        <div class="text-green-400">Database changed</div>
+                        <div class="text-green-400">mysql> </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createXSSInterface() {
+            return `
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Enter your XSS payload:</label>
+                    <input type="text" id="xss-payload" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="e.g., <script>alert('XSS')</script>">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Preview (Simulated):</label>
+                    <div class="border border-gray-300 rounded-md p-4 bg-white" id="xss-preview">
+                        <p class="text-gray-600">Your payload will be displayed here...</p>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">HTML Source:</label>
+                    <div class="code-box p-3 text-sm">
+                        <div>&lt;div class="comment"&gt;</div>
+                        <div id="xss-html-source" class="text-red-400">[your input]</div>
+                        <div>&lt;/div&gt;</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createCommandInjectionInterface() {
+            return `
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Enter IP address or command:</label>
+                    <input type="text" id="cmd-input" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., 127.0.0.1; ls">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Command to be executed:</label>
+                    <div class="code-box p-3 text-sm">
+                        <span class="text-green-400">ping -c 4 </span><span id="cmd-display" class="text-red-400">[your input]</span>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Terminal Output:</label>
+                    <div class="terminal h-32 overflow-y-auto" id="cmd-terminal">
+                        <div class="text-green-400">$ </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createGenericInterface() {
+            return `
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Enter your answer:</label>
+                    <textarea id="generic-answer" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="4" placeholder="Describe your approach or enter your payload..."></textarea>
+                </div>
+            `;
+        }
+
+        function requestHint() {
+            if (!currentChallenge) return;
+            
+            hintCount++;
+            document.getElementById('hint-section').classList.remove('hidden');
+            
+            // This would typically fetch from the API
+            const hints = {
+                'sql_injection': 'Try using SQL operators like OR, UNION, or comments to manipulate the query.',
+                'xss': 'Think about HTML tags and JavaScript event handlers that can execute code.',
+                'command_injection': 'Consider shell command separators like semicolons, ampersands, or pipes.'
+            };
+            
+            document.getElementById('challenge-hint').textContent = hints[currentChallenge.type] || 'Think about the vulnerability type and how it can be exploited.';
+        }
+
+        function submitChallenge() {
+            if (!currentChallenge) return;
+            
+            // This would typically submit to the API
+            alert('Challenge submitted! This would validate your answer and award points.');
+            
+            // Hide challenge section
+            document.getElementById('current-challenge-section').classList.add('hidden');
+            
+            // Update progress
+            loadChallengeProgress();
+        }
+
+        function skipChallenge() {
+            if (!currentChallenge) return;
+            
+            // This would typically record the skip
+            alert('Challenge skipped. This will be recorded in your profile.');
+            
+            // Hide challenge section
+            document.getElementById('current-challenge-section').classList.add('hidden');
+        }
+
+        function getAIRecommendations() {
+            // This would typically fetch from the API
+            document.getElementById('ai-insights-section').classList.remove('hidden');
+            
+            // Simulate AI analysis
+            document.getElementById('learning-style').textContent = 'Guided';
+            document.getElementById('success-rate').textContent = '78%';
+            document.getElementById('recommended-focus').textContent = 'Command Injection';
+            document.getElementById('strengths').textContent = 'SQL Injection, XSS';
+            document.getElementById('weaknesses').textContent = 'Command Injection';
+            document.getElementById('next-difficulty').textContent = 'Advanced';
+        }
+
+        // Update displays when inputs change
+        document.addEventListener('input', function(e) {
+            if (e.target.id === 'sql-payload') {
+                document.getElementById('sql-query-display').textContent = e.target.value;
+            } else if (e.target.id === 'xss-payload') {
+                document.getElementById('xss-preview').innerHTML = e.target.value;
+                document.getElementById('xss-html-source').textContent = e.target.value;
+            } else if (e.target.id === 'cmd-input') {
+                document.getElementById('cmd-display').textContent = e.target.value;
+            }
+        });
+
+        // Enhanced challenge system with interactive demos
+        function loadInteractiveChallenge(challengeData) {
+            const challengeContainer = document.getElementById('challenge-container');
+            
+            if (challengeData.interactive_demo && challengeData.demo_html) {
+                challengeContainer.innerHTML = `
+                    <div class="challenge-header">
+                        <h2>${challengeData.category} Challenge</h2>
+                        <div class="challenge-meta">
+                            <span class="difficulty-badge difficulty-${challengeData.difficulty.toLowerCase()}">${challengeData.difficulty}</span>
+                            <span class="points-badge">${challengeData.score_weight * 10} points</span>
+                        </div>
+                    </div>
+                    
+                    <div class="challenge-content">
+                        <div class="scenario-section">
+                            <h3>Scenario</h3>
+                            <p>${challengeData.scenario}</p>
+                        </div>
+                        
+                        <div class="question-section">
+                            <h3>Question</h3>
+                            <p>${challengeData.question}</p>
+                        </div>
+                        
+                        <div class="payload-section">
+                            <h3>Payload</h3>
+                            <div class="code-box">
+                                <code>${challengeData.payload}</code>
+                            </div>
+                        </div>
+                        
+                        <div class="interactive-demo">
+                            <h3>Interactive Demo</h3>
+                            <div class="demo-wrapper">
+                                ${challengeData.demo_html}
+                            </div>
+                        </div>
+                        
+                        <div class="answer-section">
+                            <h3>Your Answer</h3>
+                            <textarea id="user-answer" placeholder="Explain what this payload does and how it works..." rows="4"></textarea>
+                            <button onclick="submitAnswer('${challengeData.id}')" class="btn btn-primary">Submit Answer</button>
+                        </div>
+                        
+                        <div class="hint-section">
+                            <button onclick="showHint('${challengeData.id}')" class="btn btn-secondary">Get Hint</button>
+                            <div id="hint-display" style="display: none;">
+                                <div class="hint-box">
+                                    <h4>Hint</h4>
+                                    <p>${challengeData.hint}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Fallback to basic challenge display
+                challengeContainer.innerHTML = `
+                    <div class="challenge-header">
+                        <h2>${challengeData.category} Challenge</h2>
+                        <div class="challenge-meta">
+                            <span class="difficulty-badge difficulty-${challengeData.difficulty.toLowerCase()}">${challengeData.difficulty}</span>
+                            <span class="points-badge">${challengeData.score_weight * 10} points</span>
+                        </div>
+                    </div>
+                    
+                    <div class="challenge-content">
+                        <div class="scenario-section">
+                            <h3>Scenario</h3>
+                            <p>${challengeData.scenario}</p>
+                        </div>
+                        
+                        <div class="question-section">
+                            <h3>Question</h3>
+                            <p>${challengeData.question}</p>
+                        </div>
+                        
+                        <div class="payload-section">
+                            <h3>Payload</h3>
+                            <div class="code-box">
+                                <code>${challengeData.payload}</code>
+                            </div>
+                        </div>
+                        
+                        <div class="answer-section">
+                            <h3>Your Answer</h3>
+                            <textarea id="user-answer" placeholder="Explain what this payload does and how it works..." rows="4"></textarea>
+                            <button onclick="submitAnswer('${challengeData.id}')" class="btn btn-primary">Submit Answer</button>
+                        </div>
+                        
+                        <div class="hint-section">
+                            <button onclick="showHint('${challengeData.id}')" class="btn btn-secondary">Get Hint</button>
+                            <div id="hint-display" style="display: none;">
+                                <div class="hint-box">
+                                    <h4>Hint</h4>
+                                    <p>${challengeData.hint}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function showHint(challengeId) {
+            const hintDisplay = document.getElementById('hint-display');
+            if (hintDisplay.style.display === 'none') {
+                hintDisplay.style.display = 'block';
+            } else {
+                hintDisplay.style.display = 'none';
+            }
+        }
+
+        function submitAnswer(challengeId) {
+            const userAnswer = document.getElementById('user-answer').value;
+            
+            if (!userAnswer.trim()) {
+                alert('Please provide an answer before submitting.');
+                return;
+            }
+            
+            // Send answer to backend for validation
+            fetch('/api/challenges/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    challenge_id: challengeId,
+                    solution: userAnswer
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`✅ Correct! You earned ${data.score_earned} points!`);
+                    // Load next challenge or show success message
+                    loadNextChallenge();
+                } else {
+                    alert('❌ Incorrect answer. Try again or get a hint.');
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting answer:', error);
+                alert('Error submitting answer. Please try again.');
+            });
+        }
+
+        function loadNextChallenge() {
+            // Load a random challenge from available categories
+            const categories = ['xss', 'command_injection', 'authentication', 'csrf'];
+            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+            loadChallengeByCategory(randomCategory);
+        }
+
+        // Load challenges from backend
+        function loadChallengesFromBackend() {
+            fetch('/api/challenges/list')
+            .then(response => response.json())
+            .then(data => {
+                if (data.challenges && data.challenges.length > 0) {
+                    displayAvailableChallenges(data.challenges);
+                } else {
+                    // Load hardcoded challenges if backend fails
+                    loadHardcodedChallenges();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading challenges:', error);
+                loadHardcodedChallenges();
+            });
+        }
+
+        function loadHardcodedChallenges() {
+            // Load challenges from the challenge model
+            const xssChallenges = [
+                {
+                    id: 'xss_1',
+                    category: 'Cross-Site Scripting (XSS)',
+                    difficulty: 'Beginner',
+                    scenario: 'A comment system that displays user input without sanitization.',
+                    question: 'What would this payload do when displayed on the page?',
+                    payload: '<script>alert("XSS")</script>',
+                    hint: 'Look at the HTML tags and think about what happens when they are rendered.',
+                    score_weight: 15,
+                    type: 'xss',
+                    answer: 'This payload would execute JavaScript code, showing an alert popup.',
+                    expected_solutions: ['alert', 'javascript', 'script', 'execute', 'popup'],
+                    interactive_demo: true,
+                    demo_html: `
+                        <div class="demo-container">
+                            <h4>Vulnerable Comment System Demo</h4>
+                            <div class="comment-box">
+                                <p>User Comment: <span id="comment-display">Loading...</span></p>
+                            </div>
+                            <div class="input-section">
+                                <input type="text" id="comment-input" placeholder="Enter your comment..." />
+                                <button onclick="displayComment()">Post Comment</button>
+                            </div>
+                        </div>
+                        <script>
+                            function displayComment() {
+                                const input = document.getElementById('comment-input').value;
+                                document.getElementById('comment-display').innerHTML = input;
+                            }
+                        </script>
+                    `
+                }
+            ];
+            
+            displayAvailableChallenges(xssChallenges);
+        }
+
+        function displayAvailableChallenges(challenges) {
+            const challengesContainer = document.getElementById('challenges-container');
+            challengesContainer.innerHTML = '';
+            
+            challenges.forEach(challenge => {
+                const challengeCard = document.createElement('div');
+                challengeCard.className = `challenge-card challenge-type-${challenge.type}`;
+                challengeCard.innerHTML = `
+                    <div class="challenge-header">
+                        <h3>${challenge.category}</h3>
+                        <div class="challenge-meta">
+                            <span class="difficulty-badge difficulty-${challenge.difficulty.toLowerCase()}">${challenge.difficulty}</span>
+                            <span class="points-badge">${challenge.score_weight * 10} points</span>
+                        </div>
+                    </div>
+                    <div class="challenge-content">
+                        <p class="scenario">${challenge.scenario}</p>
+                        <div class="challenge-actions">
+                            <button onclick="startChallenge('${challenge.id}')" class="btn btn-primary">Start Challenge</button>
+                        </div>
+                    </div>
+                `;
+                challengesContainer.appendChild(challengeCard);
+            });
+        }
+
+        function startChallenge(challengeId) {
+            // Find the challenge by ID and load it
+            const challenge = findChallengeById(challengeId);
+            if (challenge) {
+                loadInteractiveChallenge(challenge);
+            }
+        }
+
+        function findChallengeById(challengeId) {
+            // This would typically fetch from backend or use cached data
+            // For now, return a sample challenge
+            return {
+                id: challengeId,
+                category: 'Cross-Site Scripting (XSS)',
+                difficulty: 'Beginner',
+                scenario: 'A comment system that displays user input without sanitization.',
+                question: 'What would this payload do when displayed on the page?',
+                payload: '<script>alert("XSS")</script>',
+                hint: 'Look at the HTML tags and think about what happens when they are rendered.',
+                score_weight: 15,
+                type: 'xss',
+                answer: 'This payload would execute JavaScript code, showing an alert popup.',
+                expected_solutions: ['alert', 'javascript', 'script', 'execute', 'popup'],
+                interactive_demo: true,
+                demo_html: `
+                    <div class="demo-container">
+                        <h4>Vulnerable Comment System Demo</h4>
+                        <div class="comment-box">
+                            <p>User Comment: <span id="comment-display">Loading...</span></p>
+                        </div>
+                        <div class="input-section">
+                            <input type="text" id="comment-input" placeholder="Enter your comment..." />
+                            <button onclick="displayComment()">Post Comment</button>
+                        </div>
+                    </div>
+                    <script>
+                        function displayComment() {
+                            const input = document.getElementById('comment-input').value;
+                            document.getElementById('comment-display').innerHTML = input;
+                        }
+                    </script>
+                `
+            };
+        }
+
+        // Initialize the challenges page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadChallengesFromBackend();
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,404 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - SecureTrainer{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    <h1 class="text-2xl font-bold mb-6" id="welcomeMessage">Loading dashboard...</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <h3 class="text-lg font-semibold text-blue-800 mb-1">Your Score</h3>
+            <p class="text-3xl font-bold" id="userScore">-</p>
+        </div>
+
+        <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+            <h3 class="text-lg font-semibold text-green-800 mb-1">Current Level</h3>
+            <p class="text-3xl font-bold" id="userLevel">-</p>
+        </div>
+
+        <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+            <h3 class="text-lg font-semibold text-purple-800 mb-1">Current Role</h3>
+            <p class="text-3xl font-bold" id="userRole">-</p>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-xl font-bold mb-4">SQL Injection Challenges</h2>
+
+    <!-- Challenge Selection -->
+    <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-2">Select a Challenge:</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button id="challenge1Button" class="bg-blue-100 hover:bg-blue-200 text-blue-800 p-4 rounded border border-blue-200">
+                <h4 class="font-semibold">Basic Authentication Bypass</h4>
+                <p class="text-sm text-gray-600">Bypass a login screen using SQL injection</p>
+            </button>
+
+            <button id="challenge2Button" class="bg-blue-100 hover:bg-blue-200 text-blue-800 p-4 rounded border border-blue-200">
+                <h4 class="font-semibold">Data Extraction</h4>
+                <p class="text-sm text-gray-600">Extract sensitive data from a database</p>
+            </button>
+
+            <button id="challenge3Button" class="bg-blue-100 hover:bg-blue-200 text-blue-800 p-4 rounded border border-blue-200">
+                <h4 class="font-semibold">Union-Based Attack</h4>
+                <p class="text-sm text-gray-600">Use UNION to retrieve data from other tables</p>
+            </button>
+
+            <button id="challenge4Button" class="bg-blue-100 hover:bg-blue-200 text-blue-800 p-4 rounded border border-blue-200">
+                <h4 class="font-semibold">Blind SQL Injection</h4>
+                <p class="text-sm text-gray-600">Extract data without seeing direct output</p>
+            </button>
+        </div>
+    </div>
+
+    <!-- Challenge Area - Initially Hidden -->
+    <div id="challengeArea" class="hidden mt-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+        <h3 id="challengeTitle" class="text-lg font-semibold mb-2">SQL Injection Challenge</h3>
+        <p id="challengeDescription" class="mb-4">Try to exploit the SQL injection vulnerability in the form below:</p>
+
+        <!-- Challenge Interface -->
+        <div class="bg-gray-800 text-white p-4 rounded mb-4">
+            <p id="challengePrompt" class="mb-2">Bank Customer Search</p>
+            <div class="flex">
+                <input type="text" id="sqlInput" class="flex-grow p-2 bg-gray-700 text-white rounded-l" placeholder="Enter account number...">
+                <button id="sqlSubmitButton" class="bg-blue-500 px-4 py-2 rounded-r">Search</button>
+            </div>
+        </div>
+
+        <!-- Results Area -->
+        <div class="bg-gray-800 text-white p-4 rounded">
+            <p class="mb-2">Query Results:</p>
+            <pre id="sqlResults" class="bg-gray-900 p-2 rounded text-green-400 overflow-x-auto"></pre>
+            <p class="mt-2 text-xs text-gray-400" id="queryInfo"></p>
+        </div>
+
+        <!-- Hint Area -->
+        <div id="hintArea" class="hidden mt-4 bg-yellow-50 p-4 border-l-4 border-yellow-400 rounded">
+            <p id="hintText" class="text-yellow-800"></p>
+        </div>
+
+        <!-- Complete Button -->
+        <button id="completeChallengeButton" class="mt-4 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700">
+            Complete Challenge
+        </button>
+    </div>
+
+    <!-- Hint Button - Visible for All Challenges -->
+    <button id="hintButton" class="mt-4 text-blue-600 hover:text-blue-800">Get Hint</button>
+</div>
+
+<!-- Learning Resources Section -->
+<div class="mt-8 bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-xl font-bold mb-4">SQL Injection Learning Resources</h2>
+
+    <div class="space-y-4">
+        <div class="border-l-4 border-blue-500 pl-4">
+            <h3 class="font-semibold">What is SQL Injection?</h3>
+            <p class="text-gray-700">SQL Injection is a code injection technique that exploits vulnerabilities in applications that interact with databases. It allows attackers to insert malicious SQL code that can read, modify, or delete data from databases.</p>
+        </div>
+
+        <div class="border-l-4 border-blue-500 pl-4">
+            <h3 class="font-semibold">Common SQL Injection Techniques</h3>
+            <ul class="list-disc list-inside text-gray-700 space-y-1">
+                <li>Authentication Bypass: Using OR statements to make WHERE clauses always true</li>
+                <li>UNION-based: Using UNION to append results from other tables</li>
+                <li>Error-based: Extracting information from database error messages</li>
+                <li>Blind SQL Injection: Using boolean conditions and timing attacks</li>
+                <li>Out-of-band: Extracting data through alternate channels</li>
+            </ul>
+        </div>
+
+        <div class="border-l-4 border-blue-500 pl-4">
+            <h3 class="font-semibold">Prevention Techniques</h3>
+            <ul class="list-disc list-inside text-gray-700 space-y-1">
+                <li>Parameterized Queries: Using prepared statements with parameterized queries</li>
+                <li>Input Validation: Validating and sanitizing user inputs</li>
+                <li>Stored Procedures: Using stored procedures for database operations</li>
+                <li>Least Privilege: Setting appropriate database user permissions</li>
+                <li>Web Application Firewalls: Implementing WAF solutions</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Inline user data for JavaScript access -->
+<script type="application/json" id="user-data">
+{% if user %}
+{
+    "id": "{{ user._id }}",
+    "user_id": "{{ user._id }}",
+    "username": "{{ user.username }}",
+    "email": "{{ user.email }}",
+    "level": {{ user.level | default(1) }},
+    "score": {{ user.score | default(0) }},
+    "role": "{{ user.role | default('Trainee') }}"
+}
+{% else %}
+null
+{% endif %}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 Dashboard loading...');
+    
+    // Try to get user data from sessionStorage first
+    let user = null;
+    
+    try {
+        const storedUser = sessionStorage.getItem('user');
+        if (storedUser) {
+            user = JSON.parse(storedUser);
+            console.log('💾 User found in sessionStorage:', user);
+        }
+    } catch (e) {
+        console.log('⚠️ Error parsing stored user data:', e);
+    }
+    
+    // If no user in sessionStorage, try to get from server data
+    if (!user) {
+        console.log('🔍 No user in sessionStorage, checking server-side session...');
+        
+        try {
+            const userDataElement = document.getElementById('user-data');
+            if (userDataElement && userDataElement.textContent.trim()) {
+                const serverUser = JSON.parse(userDataElement.textContent);
+                if (serverUser) {
+                    user = serverUser;
+                    // Store in sessionStorage for future use
+                    sessionStorage.setItem('user', JSON.stringify(user));
+                    console.log('💾 User data from server stored in sessionStorage:', user);
+                } else {
+                    console.log('❌ No user data available from server, redirecting to login');
+                    window.location.href = '/login';
+                    return;
+                }
+            } else {
+                console.log('❌ No user data element found, redirecting to login');
+                window.location.href = '/login';
+                return;
+            }
+        } catch (e) {
+            console.log('❌ Error parsing server user data:', e);
+            window.location.href = '/login';
+            return;
+        }
+    }
+    
+    console.log('👤 Using user data:', user);
+
+    // Display user data
+    document.getElementById('welcomeMessage').textContent = `Welcome, ${user.username || 'User'}!`;
+    document.getElementById('userScore').textContent = user.score || '0';
+    document.getElementById('userLevel').textContent = user.level || '1';
+    document.getElementById('userRole').textContent = user.role || 'Trainee';
+
+    // Challenge data
+    const challenges = {
+        challenge1: {
+            title: "Basic Authentication Bypass",
+            description: "You've found the admin login page. Can you bypass the authentication without knowing the password?",
+            prompt: "Admin Login",
+            placeholder: "Username",
+            hints: [
+                "The login form might be using a SQL query like: SELECT * FROM users WHERE username='input' AND password='pass'",
+                "Try using OR and comment operators to manipulate the query logic",
+                "What happens when you enter: admin' --"
+            ],
+            queryTemplate: "SELECT * FROM users WHERE username='{input}' AND password='secretpassword'",
+            successConditions: ["' OR '1'='1", "' OR 1=1 --", "admin' --"],
+            successResponse: `Login successful!
+
+Username: admin
+Role: Administrator
+Access: Full System Access
+Last Login: 2025-05-10 14:23:15`,
+            failResponse: "Invalid username or password."
+        },
+
+        challenge2: {
+            title: "Data Extraction",
+            description: "You have access to a customer search tool. Can you extract sensitive data from other tables?",
+            prompt: "Search by Customer ID",
+            placeholder: "Enter Customer ID",
+            hints: [
+                "The search might use a query like: SELECT name, email FROM customers WHERE id='input'",
+                "Try using string concatenation to extract additional data",
+                "UNION SELECT can be used to merge results from different tables"
+            ],
+            queryTemplate: "SELECT name, email FROM customers WHERE id='{input}'",
+            successConditions: ["' UNION SELECT username, password FROM users --", "' UNION SELECT table_name, NULL FROM information_schema.tables --"],
+            successResponse: `Query returned additional data:
+
+username | password
+---------|---------
+admin    | 5f4dcc3b5aa765d61d8327deb882cf99
+manager  | 482c811da5d5b4bc6d497ffa98491e38
+operator | 7c6a180b36896a0a8c02787eeafb0e4c`,
+            failResponse: "Customer not found."
+        },
+
+        challenge3: {
+            title: "Union-Based Attack",
+            description: "Extract data from a different table using UNION-based SQL injection.",
+            prompt: "Product Search",
+            placeholder: "Enter Product ID",
+            hints: [
+                "The number of columns in UNION must match the original query",
+                "Try UNION SELECT NULL, NULL to determine the number of columns",
+                "Once you know the column count, replace NULL with the data you want"
+            ],
+            queryTemplate: "SELECT product_name, price FROM products WHERE product_id='{input}'",
+            successConditions: ["' UNION SELECT username, password FROM users --", "' UNION SELECT table_name, column_name FROM information_schema.columns --"],
+            successResponse: `Query revealed database structure:
+
+Table: users
+Columns: [id, username, password, email, role, created_at]
+
+Table: customers
+Columns: [id, name, email, phone, address, credit_card]`,
+            failResponse: "No products found matching your search."
+        },
+
+        challenge4: {
+            title: "Blind SQL Injection",
+            description: "The application doesn't show query results, but responds differently based on whether the query is true or false. Extract the admin password one character at a time.",
+            prompt: "Check Account Existence",
+            placeholder: "Enter Account Number",
+            hints: [
+                "Use boolean conditions to extract data one bit at a time",
+                "Try using: ' OR (SELECT SUBSTRING(password,1,1) FROM users WHERE username='admin')='a",
+                "If the condition is true, you'll get a different response than if it's false"
+            ],
+            queryTemplate: "SELECT EXISTS(SELECT 1 FROM accounts WHERE account_number='{input}')",
+            successConditions: ["' OR (SELECT SUBSTRING(password,1,1) FROM users WHERE username='admin')='5", "' OR (SELECT ASCII(SUBSTRING(username,1,1)) FROM users WHERE id=1)=97"],
+            successResponse: `Successful blind extraction!
+
+You've managed to extract the admin password hash:
+5f4dcc3b5aa765d61d8327deb882cf99
+
+This is an MD5 hash of a common password.`,
+            failResponse: "Account not found."
+        }
+    };
+
+    // Challenge selection
+    document.getElementById('challenge1Button').addEventListener('click', () => loadChallenge('challenge1'));
+    document.getElementById('challenge2Button').addEventListener('click', () => loadChallenge('challenge2'));
+    document.getElementById('challenge3Button').addEventListener('click', () => loadChallenge('challenge3'));
+    document.getElementById('challenge4Button').addEventListener('click', () => loadChallenge('challenge4'));
+
+    // Global variables
+    let currentChallenge = null;
+    let hintLevel = 0;
+
+    function loadChallenge(challengeId) {
+        // Show challenge area
+        const challengeArea = document.getElementById('challengeArea');
+        challengeArea.classList.remove('hidden');
+
+        // Reset hint state
+        hintLevel = 0;
+        document.getElementById('hintArea').classList.add('hidden');
+
+        // Get challenge data
+        currentChallenge = challenges[challengeId];
+
+        // Update challenge UI
+        document.getElementById('challengeTitle').textContent = currentChallenge.title;
+        document.getElementById('challengeDescription').textContent = currentChallenge.description;
+        document.getElementById('challengePrompt').textContent = currentChallenge.prompt;
+        document.getElementById('sqlInput').placeholder = currentChallenge.placeholder;
+        document.getElementById('sqlInput').value = '';
+        document.getElementById('sqlResults').textContent = '';
+        document.getElementById('queryInfo').textContent = '';
+
+        // Log challenge start to backend
+        fetch(`/api/challenge/start/${user.user_id || user._id}`, {
+            method: 'GET'
+        }).catch(error => console.error('Error logging challenge start:', error));
+
+        // Scroll to the challenge area
+        challengeArea.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // SQL input submission
+    document.getElementById('sqlSubmitButton').addEventListener('click', function() {
+        if (!currentChallenge) return;
+
+        const input = document.getElementById('sqlInput').value.trim();
+        const queryTemplate = currentChallenge.queryTemplate;
+        const query = queryTemplate.replace('{input}', input);
+
+        document.getElementById('queryInfo').textContent = `Executed Query: ${query}`;
+
+        // Check if input matches any success condition
+        const isSuccessful = currentChallenge.successConditions.some(condition =>
+            input.toLowerCase().includes(condition.toLowerCase())
+        );
+
+        if (isSuccessful) {
+            document.getElementById('sqlResults').textContent = currentChallenge.successResponse;
+        } else {
+            document.getElementById('sqlResults').textContent = currentChallenge.failResponse;
+        }
+    });
+
+    // Hint button
+    document.getElementById('hintButton').addEventListener('click', function() {
+        if (!currentChallenge) return;
+
+        const hintArea = document.getElementById('hintArea');
+        const hintText = document.getElementById('hintText');
+
+        // Get current hint
+        const hint = currentChallenge.hints[Math.min(hintLevel, currentChallenge.hints.length - 1)];
+        hintText.textContent = hint;
+        hintArea.classList.remove('hidden');
+
+        // Log hint request
+        fetch(`/api/hints/get/sql-injection?level=${hintLevel + 1}&user_id=${user.user_id || user._id}`)
+            .catch(error => console.error('Error logging hint request:', error));
+
+        // Increment hint level for next hint
+        if (hintLevel < currentChallenge.hints.length - 1) {
+            hintLevel++;
+        }
+    });
+
+    // Complete challenge button
+    document.getElementById('completeChallengeButton').addEventListener('click', function() {
+        if (!currentChallenge) return;
+
+        fetch(`/api/challenge/complete/${user.user_id || user._id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ challenge_id: 'sql-injection', score: 100 })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Challenge completed! You earned 100 points.');
+
+            // Update user data in session storage
+            user.score = (parseInt(user.score || 0) + 100).toString();
+            sessionStorage.setItem('user', JSON.stringify(user));
+            document.getElementById('userScore').textContent = user.score;
+
+            // Reset challenge area
+            challengeArea.classList.add('hidden');
+            currentChallenge = null;
+        })
+        .catch(error => {
+            console.error('Error completing challenge:', error);
+            alert('Error completing challenge. Please try again.');
+        });
+    });
+});
+</script>
+{% endblock %}

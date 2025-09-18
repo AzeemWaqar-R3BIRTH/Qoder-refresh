@@ -1,0 +1,15 @@
+Flask
+Flask-Mail
+Flask-CORS
+pyzbar
+python-dotenv
+bcrypt
+qrcode
+pymongo
+Pillow
+pyzbar
+joblib
+scikit-learn
+pandas
+numpy
+opencv-python

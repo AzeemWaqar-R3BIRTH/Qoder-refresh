@@ -1,0 +1,240 @@
+# SecureTrainer Environment Configuration
+# Final Year Project - Cybersecurity Training Platform
+# 
+# COPY THIS FILE TO .env AND CONFIGURE YOUR SETTINGS
+
+# =============================================================================
+# SECURITY CONFIGURATION
+# =============================================================================
+
+# Flask Secret Key (CHANGE THIS TO A RANDOM STRING!)
+SECRET_KEY=your-super-secret-key-here-change-this-to-something-random-and-secure
+
+# =============================================================================
+# EMAIL CONFIGURATION
+# =============================================================================
+
+# Email Server Settings
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USE_TLS=True
+MAIL_USE_SSL=False
+
+# Email Credentials (Use App Password for Gmail)
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password-here
+
+# Email Display Settings
+MAIL_DEFAULT_SENDER=SecureTrainer <your-email@gmail.com>
+MAIL_MAX_EMAILS=10
+
+# =============================================================================
+# DATABASE CONFIGURATION
+# =============================================================================
+
+# MongoDB Connection String
+MONGO_URI=mongodb://localhost:27017/securetrainer
+
+# Alternative MongoDB Atlas Connection (uncomment if using cloud)
+# MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/securetrainer?retryWrites=true&w=majority
+
+# Database Name
+MONGO_DB_NAME=securetrainer
+
+# =============================================================================
+# APPLICATION SETTINGS
+# =============================================================================
+
+# Flask Environment
+FLASK_ENV=development
+FLASK_DEBUG=True
+
+# Server Configuration
+HOST=0.0.0.0
+PORT=5000
+
+# Application URL (for email links)
+APP_URL=http://localhost:5000
+
+# =============================================================================
+# AI/ML MODEL CONFIGURATION
+# =============================================================================
+
+# Model Paths
+MODEL_PATH=./model/challenge_difficulty_model.pkl
+LABEL_ENCODER_PATH=./model/label_encoder.pkl
+
+# AI Model Settings
+AI_ENABLED=True
+AI_FALLBACK_ENABLED=True
+
+# =============================================================================
+# QR CODE CONFIGURATION
+# =============================================================================
+
+# QR Code Storage
+QR_STORAGE_PATH=./qr_codes
+QR_EXPIRY_HOURS=24
+
+# QR Code Security
+QR_TOKEN_LENGTH=32
+QR_ENCRYPTION_KEY=your-qr-encryption-key-here
+
+# =============================================================================
+# CHALLENGE SYSTEM CONFIGURATION
+# =============================================================================
+
+# Challenge Settings
+MAX_HINTS_PER_CHALLENGE=3
+HINT_PENALTY_PERCENTAGE=10
+BASE_CHALLENGE_POINTS=100
+LEVEL_UP_THRESHOLD=1000
+
+# Challenge Categories
+ENABLED_CHALLENGES=sql_injection,xss,command_injection,authentication,csrf
+
+# =============================================================================
+# GAMIFICATION SETTINGS
+# =============================================================================
+
+# Scoring System
+POINTS_MULTIPLIER=1.0
+BONUS_POINTS_ENABLED=True
+STREAK_BONUS_ENABLED=True
+
+# Role Progression
+ROLE_THRESHOLDS=1000,2500,5000,10000,20000
+ROLE_NAMES=Trainee,Analyst,Specialist,Expert,Department Head
+
+# =============================================================================
+# LOGGING AND MONITORING
+# =============================================================================
+
+# Logging Configuration
+LOG_LEVEL=INFO
+LOG_FILE=./logs/securetrainer.log
+LOG_MAX_SIZE=10MB
+LOG_BACKUP_COUNT=5
+
+# Performance Monitoring
+ENABLE_METRICS=True
+METRICS_INTERVAL=60
+
+# =============================================================================
+# SECURITY SETTINGS
+# =============================================================================
+
+# Session Configuration
+SESSION_COOKIE_SECURE=False
+SESSION_COOKIE_HTTPONLY=True
+SESSION_COOKIE_SAMESITE=Lax
+PERMANENT_SESSION_LIFETIME=3600
+
+# Rate Limiting
+RATE_LIMIT_ENABLED=True
+RATE_LIMIT_REQUESTS=100
+RATE_LIMIT_WINDOW=3600
+
+# CSRF Protection
+CSRF_ENABLED=True
+CSRF_TIME_LIMIT=3600
+
+# =============================================================================
+# DEVELOPMENT SETTINGS
+# =============================================================================
+
+# Debug Mode
+DEBUG=True
+TESTING=False
+
+# Auto-reload
+AUTO_RELOAD=True
+
+# Development Tools
+ENABLE_PROFILER=False
+ENABLE_DEBUG_TOOLBAR=False
+
+# =============================================================================
+# PRODUCTION SETTINGS (Change these for production)
+# =============================================================================
+
+# Production Overrides (uncomment for production)
+# FLASK_ENV=production
+# FLASK_DEBUG=False
+# DEBUG=False
+# SESSION_COOKIE_SECURE=True
+# HOST=127.0.0.1
+# LOG_LEVEL=WARNING
+# ENABLE_METRICS=False
+# RATE_LIMIT_ENABLED=True
+# RATE_LIMIT_REQUESTS=1000
+# RATE_LIMIT_WINDOW=3600
+
+# =============================================================================
+# EXTERNAL SERVICE INTEGRATIONS
+# =============================================================================
+
+# Google Services (if using Google APIs)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Microsoft Services (if using Microsoft APIs)
+MICROSOFT_CLIENT_ID=your-microsoft-client-id
+MICROSOFT_CLIENT_SECRET=your-microsoft-client-secret
+
+# =============================================================================
+# BACKUP AND RECOVERY
+# =============================================================================
+
+# Backup Settings
+BACKUP_ENABLED=False
+BACKUP_INTERVAL=24
+BACKUP_RETENTION_DAYS=7
+BACKUP_PATH=./backups
+
+# =============================================================================
+# NOTIFICATION SETTINGS
+# =============================================================================
+
+# Email Notifications
+SEND_WELCOME_EMAIL=True
+SEND_CHALLENGE_COMPLETION_EMAIL=True
+SEND_PROMOTION_EMAIL=True
+SEND_WEEKLY_PROGRESS_EMAIL=False
+
+# =============================================================================
+# CUSTOMIZATION SETTINGS
+# =============================================================================
+
+# Company Branding
+COMPANY_NAME=SecureTrainer
+COMPANY_LOGO_URL=
+COMPANY_WEBSITE=https://securetrainer.com
+
+# Application Theme
+THEME_COLOR=#1e40af
+ACCENT_COLOR=#f59e0b
+SUCCESS_COLOR=#10b981
+ERROR_COLOR=#ef4444
+
+# =============================================================================
+# NOTES AND INSTRUCTIONS
+# =============================================================================
+
+# IMPORTANT: 
+# 1. Change SECRET_KEY to a random string
+# 2. Configure your email credentials
+# 3. Set up MongoDB connection
+# 4. Adjust settings based on your environment
+# 5. Never commit this file to version control
+# 6. Use environment-specific .env files for different deployments
+
+# For Gmail App Password:
+# 1. Enable 2-factor authentication
+# 2. Generate App Password
+# 3. Use App Password instead of regular password
+
+# For MongoDB Atlas:
+# 1. Create cluster
+# 2. Get connection string
+# 3. Replace username, password, and cluster details

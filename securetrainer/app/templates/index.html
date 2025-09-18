@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}SecureTrainer - Cybersecurity Awareness Training Platform{% endblock %}
+
+{% block content %}
+    <!-- Main Landing Page -->
+    <div class="min-h-screen flex flex-col">
+        <header class="bg-blue-800 text-white py-4 px-6 shadow-md">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center">
+                    <i class="fas fa-shield-alt text-2xl mr-3"></i>
+                    <h1 class="text-2xl font-bold">SecureTrainer</h1>
+                </div>
+                <a href="/login" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition">Login</a>
+            </div>
+        </header>
+
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <div class="max-w-5xl mx-auto">
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="md:flex">
+                        <div class="md:w-1/2">
+                            <div class="p-8">
+                                <h2 class="text-3xl font-bold text-blue-800 mb-4">Cybersecurity Awareness Training</h2>
+                                <p class="text-gray-600 mb-6">Enhance your organization's security posture through interactive, gamified learning.</p>
+                                <ul class="space-y-3 mb-6">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                        <span>Hands-on training with real-world cyber threats</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                        <span>Secure QR code authentication system</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                        <span>AI-powered difficulty adjustment based on performance</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                        <span>Comprehensive scoring and reward system</span>
+                                    </li>
+                                </ul>
+                                <div class="flex space-x-4">
+                                    <a href="/register" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md transition font-medium">Register Now</a>
+                                    <a href="/login" class="border border-blue-600 text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-md transition font-medium">Sign In</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="md:w-1/2 bg-blue-800 text-white p-8 flex items-center">
+                            <div>
+                                <h3 class="text-2xl font-bold mb-4">Why SecureTrainer?</h3>
+                                <p class="mb-4">Traditional cybersecurity training often fails to engage employees. Our platform turns learning into an interactive experience with:</p>
+                                <ul class="space-y-3">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-trophy mr-2 mt-1"></i>
+                                        <span>Competitive leaderboards and role-based rewards</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-gamepad mr-2 mt-1"></i>
+                                        <span>Engaging challenges simulating real attacks</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-robot mr-2 mt-1"></i>
+                                        <span>AI that adapts difficulty to each employee's skill level</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-chart-line mr-2 mt-1"></i>
+                                        <span>Detailed analytics to track security awareness progress</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12 grid md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="text-blue-600 text-3xl mb-4">
+                            <i class="fas fa-bug"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">SQL Injection Training</h3>
+                        <p class="text-gray-600">Learn to identify and prevent one of the most common web application vulnerabilities.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="text-blue-600 text-3xl mb-4">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Cross-Site Scripting (XSS)</h3>
+                        <p class="text-gray-600">Understand how attackers can inject malicious scripts and how to defend against them.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="text-blue-600 text-3xl mb-4">
+                            <i class="fas fa-terminal"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Command Injection</h3>
+                        <p class="text-gray-600">Discover how operating system commands can be exploited and best practices to prevent attacks.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="bg-gray-800 text-white py-6">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="mb-4 md:mb-0">
+                        <div class="flex items-center">
+                            <i class="fas fa-shield-alt text-xl mr-2"></i>
+                            <span class="text-lg font-bold">SecureTrainer</span>
+                        </div>
+                        <p class="text-gray-400 text-sm mt-1">Cybersecurity Awareness Training Platform</p>
+                    </div>
+                    <div class="text-center md:text-right">
+                        <p class="text-gray-400 text-sm">© 2025 SecureTrainer. All rights reserved.</p>
+                        <p class="text-gray-400 text-sm mt-1">A final year project for Bachelor's in Cyber Security</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+{% endblock %}
